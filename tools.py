@@ -13,8 +13,8 @@ class Strategy(object):
         # 5: do nothing
         # 6: pick garbage
         self.__action_num = 7
-
         self.__generate_route_table()
+        self.__gene_mutation_rate = 0.1  # 基因可能异变的最大比例
 
     def __generate_route_table(self):
         # 0: empty; 1: garbage; 2: wall
@@ -36,6 +36,9 @@ class Strategy(object):
 
     def gene_num(self):
         return self.__gene_num
+
+    def gene_mutation_rate(self):
+        return self.__gene_mutation_rate
 
     def get_gene_index(self, left, top, right, bottom, center):
         route = f'{left}:{top}:{right}:{bottom}:{center}'
@@ -85,6 +88,18 @@ class Collector(object):
         self.__cur_pos_y = 0
         self.__generate_random_gene()
 
+    def __init__(self, strategy: Strategy, gene: list):
+        self.__strategy = strategy
+
+        self.__score = 0
+        self.__cur_pos_x = 0
+        self.__cur_pos_y = 0
+
+        if gene is None:
+            self.__generate_random_gene()
+        else:
+            self.__generate_mutation_gene(gene)
+
     def __generate_random_gene(self):
         self.__gene = []
 
@@ -92,6 +107,18 @@ class Collector(object):
             self.__gene.append(
                 random.randint(0, self.__strategy.action_num() - 1)
             )
+
+    def __generate_mutation_gene(self, gene):
+        mutation_num = int(self.__strategy.gene_num() *
+                           self.__strategy.gene_mutation_rate())
+
+        for _ in range(mutation_num):
+            mutation_index = random.randint(
+                0, self.__strategy.gene_num() - 1)
+            gene[mutation_index] = random.randint(
+                0, self.__strategy.action_num() - 1)
+
+        self.__gene = gene
 
     def __move(self, action):
         if action == 0:  # move left
