@@ -1,72 +1,37 @@
-import random
+# %%
+from tools import Strategy, Square, Collector
 import numpy as np
+import copy
 
+SQUARE_WIDTH = 10
+SQUARE_HEIGHT = 10
+SQUARE_NUM = 100
+COLLECTOR_NUM = 100
+ACTION_STEP_NUM = 200
 
-class Strategy(object):
-    def __init__(self):
-        # 0: move left
-        # 1: move top
-        # 2: move right
-        # 3: move bottom
-        # 4: move randomly
-        # 5: do nothing
-        # 6: pick garbage
-        self.__action_num = 7
+strategy = Strategy()
+squares = []
+collectors = []
 
-        self.__generate_route_table()
+for i in range(SQUARE_NUM):
+    squares.append(Square(SQUARE_WIDTH, SQUARE_HEIGHT))
 
-    def __generate_route_table(self):
-        # 0: empty; 1: garbage; 2: wall
-        # i: left; j: top; k: right; l: bottom; m: center
-        self.__route_table = {}
-        self.__gene_num = 0
+for i in range(COLLECTOR_NUM):
+    collectors.append(Collector(strategy))
 
-        for i in range(3):
-            for j in range(3):
-                for k in range(3):
-                    for l in range(3):
-                        for m in range(2):
-                            route = f'{i}:{j}:{k}:{l}:{m}'
-                            self.__route_table[route] = self.__gene_num
-                            self.__gene_num += 1
+for i in range(COLLECTOR_NUM):
+    total_score = 0.0
 
-    def action_num(self):
-        return self.__action_num
+    for j in range(SQUARE_NUM):
+        collector = copy.copy(collectors[i])
+        collector.bind_square(squares[j])
 
-    def gene_num(self):
-        return self.__gene_num
+        for k in range(ACTION_STEP_NUM):
+            collector.action()
 
+        total_score += collector.score()
 
-class Square(object):
-    def __init__(self, width, height):
-        self.__square = np.random.randint(2, (width, height))
+    average_score = total_score / SQUARE_NUM
+    print(f'Collector #{i + 1} got score: {average_score}')
 
-    def get_route(self, pos_x, pos_y):
-        pass
-
-
-class Collector(object):
-    def __init__(self, strategy: Strategy, square: Square):
-        self.__strategy = strategy
-        self.__square = square
-        self.__score = 0
-        self.__cur_pos_x = 0
-        self.__cur_pos_y = 0
-        self.__generate_random_gene()
-
-    def __generate_random_gene(self):
-        self.__gene = []
-
-        for _ in range(self.__strategy.gene_num()):
-            self.__gene.append(
-                random.randint(0, self.__strategy.action_num() - 1)
-            )
-
-    def gene(self):
-        return self.__gene
-
-    def score(self):
-        return self.__score
-
-    def action(self, square):
-        route = square.get_route(self.__cur_pos_x, self.__cur_pos_y)
+# %%
