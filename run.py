@@ -1,7 +1,9 @@
 # %%
 from tools import Strategy, Square, Collector
 import copy
+from multiprocessing import Pool, Manager, managers
 
+PROCESSOR_NUM = 8
 SQUARE_WIDTH = 10
 SQUARE_HEIGHT = 10
 SQUARE_NUM = 100
@@ -17,45 +19,63 @@ for i in range(SQUARE_NUM):
 
 pre_best_collector = None  # 上一代分数最高的Collector
 cur_collectors = []
-best_score_per_generation = []  # 每代的最好成绩
+
+
+def collector_work(collector, squares, scores):
+    '''某个Collector在不同的Square上工作，计算平均成绩'''
+
+    total_score = 0.0
+
+    for i in range(SQUARE_NUM):
+        collector.reset_score()
+        collector.bind_square(squares[i])
+
+        for _ in range(ACTION_STEP_NUM):
+            collector.action()
+
+        total_score += collector.score()
+
+    average_score = total_score / SQUARE_NUM
+    scores.append(average_score)
+
+    print(f'finished with score: {average_score}')
+
 
 # 更新换代
 for g in range(GENERATION_NUM):
     if pre_best_collector is None:  # 第一代
         for i in range(COLLECTOR_NUM):
-            cur_collectors.append(Collector(strategy, gene=None))
+            cur_collectors.append(
+                Collector(strategy, mother=None, father=None))
     else:  # 第二代以及以后
         for i in range(COLLECTOR_NUM):
             cur_collectors.append(
-                Collector(strategy, gene=pre_best_collector.gene()))
+                Collector(
+                    strategy,
+                    mother=pre_best_collector.gene(),
+                    father=None
+                )
+            )
 
     best_collector_index = None
     best_score = None
 
+    manager = Manager()
+    scores = manager.list()
+    pool = Pool(processes=PROCESSOR_NUM)
+
     # 轮询每个Collector
     for j in range(COLLECTOR_NUM):
-        total_score = 0.0
+        pool.apply_async(collector_work, (cur_collectors[j], squares, scores))
 
-        # 某个Collector在不同的Square上工作，计算成绩
-        for k in range(SQUARE_NUM):
-            collector = copy.copy(cur_collectors[i])
-            collector.bind_square(squares[k])
-
-            for _ in range(ACTION_STEP_NUM):
-                collector.action()
-
-            total_score += collector.score()
-
-        average_score = total_score / SQUARE_NUM
-
-        if best_score is None or average_score > best_score:
-            best_score = average_score
-            best_collector_index = j
+    pool.close()
+    pool.join()
 
     # 本代清理
-    pre_best_collector = cur_collectors[best_collector_index]
+    best_score = max(scores)
+    best_score_index = scores.index(best_score)
+    pre_best_collector = cur_collectors[best_score_index]
     cur_collectors = []
-    best_score_per_generation.append(best_score)
 
     print(f'generation #{g}\'s best score: {best_score}')
 # %%

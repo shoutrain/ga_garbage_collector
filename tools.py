@@ -80,25 +80,19 @@ class Square(object):
 
 
 class Collector(object):
-    def __init__(self, strategy: Strategy):
-        self.__strategy = strategy
-
-        self.__score = 0
-        self.__cur_pos_x = 0
-        self.__cur_pos_y = 0
-        self.__generate_random_gene()
-
-    def __init__(self, strategy: Strategy, gene: list):
+    def __init__(self, strategy: Strategy, mother: list, father: list):
         self.__strategy = strategy
 
         self.__score = 0
         self.__cur_pos_x = 0
         self.__cur_pos_y = 0
 
-        if gene is None:
+        if mother is None and father is None:
             self.__generate_random_gene()
+        elif father is None:
+            self.__generate_mutation_gene(mother)
         else:
-            self.__generate_mutation_gene(gene)
+            pass
 
     def __generate_random_gene(self):
         self.__gene = []
@@ -151,6 +145,9 @@ class Collector(object):
 
     def score(self):
         return self.__score
+
+    def reset_score(self):
+        self.__score = 0
 
     def bind_square(self, square):
         self.__square = copy.copy(square)
