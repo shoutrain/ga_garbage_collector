@@ -18,22 +18,29 @@ python ./run.py [required - breeding way: 1-single breeding; 2-couple breeding] 
 
 ## 实验记录
 
-广场大小：10*10
-不同的广场数量：100个
-垃圾回收机器人数量：100个
-垃圾回收机器人一次清扫行动步数：200步
-遗传代数：1000代
+**环境大小（长x宽）：** 10x10
+**不同的环境数量：** 100个
+**机器人基因数量：** 162个
+**机器人单位基因表达不同指令最大个数：** 7个
+**机器人数量：** 100个
+**机器人一次行动步数：** 200步
+**遗传代数：** 1000代
 
-### 第一次
+### 2021年10月20日
 
-日期：2021年10月20日
-遗传方法：SingleBreeding
-变异率：0.1
-结果：不收敛，被环境淘汰
+**遗传方法：** SingleBreedingx2
+**变异率：** 0.1
+**结果：** 50代后看到没有收敛趋势，且发散范围扩大，因为运行时间较长（当时未支持多进程，运算速度较慢），故中止
 
-### 第二次
+### 2021年10月21日
 
-日期：2021年10月21日
-遗传方法：SingleBreeding
-变异率：0.01
-结果：收敛，可以在环境生存
+**遗传方法：** SingleBreedingx3，CoupleBreedingx3
+**变异率：** 0.01
+**结果：** 明显收敛（已支持多进程，运算速度较快）。单性繁殖普遍收敛的较慢，且较不稳定，1000代后适应环境的分数在25-45之间，离理想值500还很远；两性繁殖普遍收敛的较快，且较稳定，1000代后适应环境的分数在440-460之间，接近理想值500
+
+![Single Breeding GA第一次](./img/ga_single_breeding_01.png)
+![Single Breeding GA第二次](./img/ga_single_breeding_02.png)
+![Single Breeding GA第三次](./img/ga_single_breeding_03.png)
+![Couple Breeding GA第一次](./img/ga_couple_breeding_01.png)
+![Couple Breeding GA第二次](./img/ga_couple_breeding_01.png)
+![Couple Breeding GA第三次](./img/ga_couple_breeding_01.png)

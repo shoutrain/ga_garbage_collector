@@ -6,11 +6,11 @@ import sys
 
 DEFAULT_PROCESSOR_NUM = 8  # 默认进程数量
 
-SQUARE_WIDTH = 10  # 广场宽度
-SQUARE_HEIGHT = 10  # 广场高度
-SQUARE_NUM = 100  # 广场数量
-COLLECTOR_NUM = 100  # 垃圾回收机器人个数
-ACTION_STEP_NUM = 200  # 垃圾回收机器人一次清扫行动步数
+SQUARE_WIDTH = 10  # 环境宽度
+SQUARE_HEIGHT = 10  # 环境高度
+SQUARE_NUM = 100  # 不同的环境数量
+COLLECTOR_NUM = 100  # 收机器人个数
+ACTION_STEP_NUM = 200  # 收机器人一次行动步数
 GENERATION_NUM = 1000  # 遗传代数
 MUTATION_RATE = 0.01  # 变异率
 
