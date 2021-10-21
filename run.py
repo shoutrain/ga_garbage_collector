@@ -4,7 +4,8 @@ from multiprocessing import Pool, Manager
 import matplotlib.pyplot as plt
 import sys
 
-PROCESSOR_NUM = 8  # 进程数量
+DEFAULT_PROCESSOR_NUM = 8  # 默认进程数量
+
 SQUARE_WIDTH = 10  # 广场宽度
 SQUARE_HEIGHT = 10  # 广场高度
 SQUARE_NUM = 100  # 广场数量
@@ -32,7 +33,7 @@ def collector_work(collector: Collector, squares: list, scores_with_genes: list)
     scores_with_genes.append([average_score, collector.gene()])
 
 
-def generation_work(generation, pre_genes_with_scores: list, breeding_way: BreedingWay):
+def generation_work(processor_num, generation, pre_genes_with_scores: list, breeding_way: BreedingWay):
     '''每一代开始工作'''
 
     cur_collectors = []
@@ -47,7 +48,7 @@ def generation_work(generation, pre_genes_with_scores: list, breeding_way: Breed
             cur_collectors.append(collector)
 
     manager = Manager()
-    pool = Pool(processes=PROCESSOR_NUM)
+    pool = Pool(processes=processor_num)
     scores_with_genes = manager.list()
 
     # 轮询每个Collector
@@ -68,9 +69,12 @@ def generation_work(generation, pre_genes_with_scores: list, breeding_way: Breed
 
 
 if __name__ == '__main__':
-    cmd = 'python ./run.py [breeding way: 1-single breeding; 2-couple breeding]'
+    parameter_1_msg = '[required - breeding way: 1-single breeding; 2-couple breeding]'
+    parameter_2_msg = '[optional - processor number, default: 8]'
+    cmd = f'python ./run.py {parameter_1_msg} {parameter_2_msg}'
+    cmd_length = len(sys.argv)
 
-    if len(sys.argv) != 2:
+    if cmd_length != 2 and cmd_length != 3:
         print(f'Usage: {cmd}')
         exit(1)
 
@@ -94,13 +98,22 @@ if __name__ == '__main__':
         print(f'Usage: {cmd}')
         exit(1)
 
+    processor_num = DEFAULT_PROCESSOR_NUM
+
+    if cmd_length == 3:
+        processor_num = int(sys.argv[2])
+
     best_scores = []
     pre_genes_with_scores = []
 
     # 更新换代
-    for g in range(GENERATION_NUM):
+    for generation in range(GENERATION_NUM):
         pre_genes_with_scores, best_score = generation_work(
-            g, pre_genes_with_scores, breeding_way)
+            processor_num,
+            generation,
+            pre_genes_with_scores,
+            breeding_way
+        )
         best_scores.append(best_score)
 
     # 画进化分数图

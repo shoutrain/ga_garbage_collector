@@ -13,7 +13,7 @@ tools.py: 包含了几个使用的工具类
 run.py: 运行算法的入口文件，在项目根目录下运行命令如下（在Linux平台上需要使用python3命令，使用python一般默认为python2）：
 
 ```bash
-python ./run.py [breeding way: 1-single breeding; 2-couple breeding]
+python ./run.py [required - breeding way: 1-single breeding; 2-couple breeding] [optional - processor number, default: 8]
 ```
 
 ## 实验记录
