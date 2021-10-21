@@ -1,5 +1,6 @@
 from tools import Strategy, Square, Collector
-from tools import SingleBreeding
+# from tools import SingleBreeding
+from tools import CoupleBreeding
 from multiprocessing import Pool, Manager
 import matplotlib.pyplot as plt
 
@@ -40,7 +41,12 @@ def generation_work(generation, pre_genes_with_scores: list):
         for _ in range(COLLECTOR_NUM):
             cur_collectors.append(Collector(strategy))
     else:  # 第二代及以后
-        breeding_way = SingleBreeding(
+        # breeding_way = SingleBreeding(
+        #     strategy,
+        #     genes_with_scores=pre_genes_with_scores,
+        #     mutation_rate=MUTATION_RATE
+        # )
+        breeding_way = CoupleBreeding(
             strategy,
             genes_with_scores=pre_genes_with_scores,
             mutation_rate=MUTATION_RATE
@@ -91,12 +97,12 @@ if __name__ == '__main__':
     y = []
 
     for key, value in enumerate(best_scores):
-        x.append(key)
+        x.append(key + 1)
         y.append(value)
 
-    plt.title('GA Algorithm Demo:)')
+    plt.title('GA Algorithm Demo: Garbage Collector\'s Evolution)')
     plt.xlabel('generations')
-    plt.ylabel('score')
-    plt.plot(x, y, label='evolutionary score line')
+    plt.ylabel('scores')
+    plt.plot(x, y, label='evolutionary score curve')
     plt.legend()
     plt.show()

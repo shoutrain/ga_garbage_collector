@@ -7,6 +7,7 @@ tools.py: 包含了几个使用的工具类
     - Square：广场，其上随机有垃圾，Collector可以在Square上收集垃圾
     - BreedingWay：繁殖方式的积累，所有具体繁殖方式都要从此类继承
     - SingleBreeding: 单性繁殖方式，通过选取上一代最优Collector个体，指定变异几率后，随机生成本代
+    - CoupleBreeding：双性繁殖方式，从上一代所有Collector中按照score高低作为概率选取两个Collector，然后通过拼接这两个Collector的基因生成本代
     - Collector：垃圾回收机器人，每个Collector有不同的基因，通过BerrdingWay指定的繁殖方式繁殖后代
 
 run.py: 使用vscode的jupyter插件运行

@@ -91,15 +91,7 @@ class BreedingWay(object):
     def breed(self):
         return None
 
-
-class SingleBreeding(BreedingWay):
-    def __init__(self, strategy: Strategy, genes_with_scores, mutation_rate):
-        BreedingWay.__init__(self, strategy, genes_with_scores, mutation_rate)
-
-    def breed(self):
-        return self.__generate_mutation_gene(self._genes_with_scores[0][1])
-
-    def __generate_mutation_gene(self, gene):
+    def _generate_mutation_gene(self, gene):
         mutation_num = int(self._strategy.gene_num() * self._mutation_rate)
 
         for _ in range(mutation_num):
@@ -108,6 +100,55 @@ class SingleBreeding(BreedingWay):
                 0,
                 self._strategy.action_num() - 1
             )
+
+        return gene
+
+
+class SingleBreeding(BreedingWay):
+    def __init__(self, strategy: Strategy, genes_with_scores, mutation_rate):
+        BreedingWay.__init__(self, strategy, genes_with_scores, mutation_rate)
+
+    def breed(self):
+        return self._generate_mutation_gene(self._genes_with_scores[0][1])
+
+
+class CoupleBreeding(BreedingWay):
+    def __init__(self, strategy: Strategy, genes_with_scores, mutation_rate):
+        BreedingWay.__init__(self, strategy, genes_with_scores, mutation_rate)
+        self.__generate_gene_rate_index()
+
+    def breed(self):
+        gene_1 = self.__find_gene_randomly()
+        gene_2 = self.__find_gene_randomly()
+        gene = self.__merge_two_gene_randomly(gene_1, gene_2)
+
+        return self._generate_mutation_gene(gene)
+
+    def __generate_gene_rate_index(self):
+        self.__gene_rate_index = []
+        collector_num = len(self._genes_with_scores)
+
+        for i in range(collector_num):
+            tmp = [i for _ in range(collector_num - i + 1)]
+            self.__gene_rate_index.extend(tmp)
+
+        random.shuffle(self.__gene_rate_index)
+
+    def __find_gene_randomly(self):
+        random_index = random.randint(0, len(self.__gene_rate_index) - 1)
+        random_index = self.__gene_rate_index[random_index]
+
+        return self._genes_with_scores[random_index][1]
+
+    def __merge_two_gene_randomly(self, gene_1, gene_2):
+        gene = []
+        split_pos = random.randint(1, self._strategy.gene_num() - 2)
+
+        for i in range(self._strategy.gene_num()):
+            if i <= split_pos:
+                gene.append(gene_1[i])
+            else:
+                gene.append(gene_2[i])
 
         return gene
 
