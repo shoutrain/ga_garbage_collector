@@ -14,7 +14,6 @@ class Strategy(object):
         # 6: pick garbage
         self.__action_num = 7
         self.__generate_route_table()
-        self.__gene_mutation_rate = 0.1  # 基因可能异变的最大比例
 
     def __generate_route_table(self):
         # 0: empty; 1: garbage; 2: wall
@@ -36,9 +35,6 @@ class Strategy(object):
 
     def gene_num(self):
         return self.__gene_num
-
-    def gene_mutation_rate(self):
-        return self.__gene_mutation_rate
 
     def get_gene_index(self, left, top, right, bottom, center):
         route = f'{left}:{top}:{right}:{bottom}:{center}'
@@ -79,20 +75,55 @@ class Square(object):
         self.__square[pos_x, pos_y] = 0
 
 
+class BreedingWay(object):
+    def __init__(self, strategy: Strategy, genes_with_scores, mutation_rate):
+        self._strategy = strategy
+        self._genes_with_scores = genes_with_scores
+        self._genes_with_scores.sort(reverse=True)
+        self._mutation_rate = mutation_rate
+
+    def genes(self):
+        return self._genes
+
+    def mutation_rate(self):
+        return self._mutation_rate
+
+    def breed(self):
+        return None
+
+
+class SingleBreeding(BreedingWay):
+    def __init__(self, strategy: Strategy, genes_with_scores, mutation_rate):
+        BreedingWay.__init__(self, strategy, genes_with_scores, mutation_rate)
+
+    def breed(self):
+        return self.__generate_mutation_gene(self._genes_with_scores[0][1])
+
+    def __generate_mutation_gene(self, gene):
+        mutation_num = int(self._strategy.gene_num() * self._mutation_rate)
+
+        for _ in range(mutation_num):
+            mutation_index = random.randint(0, self._strategy.gene_num() - 1)
+            gene[mutation_index] = random.randint(
+                0,
+                self._strategy.action_num() - 1
+            )
+
+        return gene
+
+
 class Collector(object):
-    def __init__(self, strategy: Strategy, mother: list, father: list):
+    def __init__(self, strategy: Strategy, breeding_way: BreedingWay = None):
         self.__strategy = strategy
 
         self.__score = 0
         self.__cur_pos_x = 0
         self.__cur_pos_y = 0
 
-        if mother is None and father is None:
+        if breeding_way is None:
             self.__generate_random_gene()
-        elif father is None:
-            self.__generate_mutation_gene(mother)
         else:
-            pass
+            self.__gene = breeding_way.breed()
 
     def __generate_random_gene(self):
         self.__gene = []
@@ -101,18 +132,6 @@ class Collector(object):
             self.__gene.append(
                 random.randint(0, self.__strategy.action_num() - 1)
             )
-
-    def __generate_mutation_gene(self, gene):
-        mutation_num = int(self.__strategy.gene_num() *
-                           self.__strategy.gene_mutation_rate())
-
-        for _ in range(mutation_num):
-            mutation_index = random.randint(
-                0, self.__strategy.gene_num() - 1)
-            gene[mutation_index] = random.randint(
-                0, self.__strategy.action_num() - 1)
-
-        self.__gene = gene
 
     def __move(self, action):
         if action == 0:  # move left
