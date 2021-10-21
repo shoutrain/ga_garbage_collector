@@ -76,17 +76,16 @@ class Square(object):
 
 
 class BreedingWay(object):
-    def __init__(self, strategy: Strategy, genes_with_scores, mutation_rate):
+    def __init__(self, strategy: Strategy,  mutation_rate):
         self._strategy = strategy
-        self._genes_with_scores = genes_with_scores
-        self._genes_with_scores.sort(reverse=True)
         self._mutation_rate = mutation_rate
-
-    def genes(self):
-        return self._genes
 
     def mutation_rate(self):
         return self._mutation_rate
+
+    def bind_genes_with_scores(self, genes_with_scores):
+        self._genes_with_scores = genes_with_scores
+        self._genes_with_scores.sort(reverse=True)
 
     def breed(self):
         return None
@@ -105,16 +104,19 @@ class BreedingWay(object):
 
 
 class SingleBreeding(BreedingWay):
-    def __init__(self, strategy: Strategy, genes_with_scores, mutation_rate):
-        BreedingWay.__init__(self, strategy, genes_with_scores, mutation_rate)
+    def __init__(self, strategy: Strategy, mutation_rate):
+        BreedingWay.__init__(self, strategy, mutation_rate)
 
     def breed(self):
         return self._generate_mutation_gene(self._genes_with_scores[0][1])
 
 
 class CoupleBreeding(BreedingWay):
-    def __init__(self, strategy: Strategy, genes_with_scores, mutation_rate):
-        BreedingWay.__init__(self, strategy, genes_with_scores, mutation_rate)
+    def __init__(self, strategy: Strategy, mutation_rate):
+        BreedingWay.__init__(self, strategy, mutation_rate)
+
+    def bind_genes_with_scores(self, genes_with_scores):
+        BreedingWay.bind_genes_with_scores(self, genes_with_scores)
         self.__generate_gene_rate_index()
 
     def breed(self):
@@ -129,7 +131,7 @@ class CoupleBreeding(BreedingWay):
         collector_num = len(self._genes_with_scores)
 
         for i in range(collector_num):
-            tmp = [i for _ in range(collector_num - i + 1)]
+            tmp = [i for _ in range(collector_num - i)]
             self.__gene_rate_index.extend(tmp)
 
         random.shuffle(self.__gene_rate_index)
@@ -144,11 +146,8 @@ class CoupleBreeding(BreedingWay):
         gene = []
         split_pos = random.randint(1, self._strategy.gene_num() - 2)
 
-        for i in range(self._strategy.gene_num()):
-            if i <= split_pos:
-                gene.append(gene_1[i])
-            else:
-                gene.append(gene_2[i])
+        gene.extend(gene_1[:split_pos])
+        gene.extend(gene_2[split_pos:])
 
         return gene
 

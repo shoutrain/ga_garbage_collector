@@ -1,8 +1,8 @@
 from tools import Strategy, Square, Collector
-# from tools import SingleBreeding
-from tools import CoupleBreeding
+from tools import BreedingWay, SingleBreeding, CoupleBreeding
 from multiprocessing import Pool, Manager
 import matplotlib.pyplot as plt
+import sys
 
 PROCESSOR_NUM = 8  # 进程数量
 SQUARE_WIDTH = 10  # 广场宽度
@@ -32,7 +32,7 @@ def collector_work(collector: Collector, squares: list, scores_with_genes: list)
     scores_with_genes.append([average_score, collector.gene()])
 
 
-def generation_work(generation, pre_genes_with_scores: list):
+def generation_work(generation, pre_genes_with_scores: list, breeding_way: BreedingWay):
     '''每一代开始工作'''
 
     cur_collectors = []
@@ -41,16 +41,7 @@ def generation_work(generation, pre_genes_with_scores: list):
         for _ in range(COLLECTOR_NUM):
             cur_collectors.append(Collector(strategy))
     else:  # 第二代及以后
-        # breeding_way = SingleBreeding(
-        #     strategy,
-        #     genes_with_scores=pre_genes_with_scores,
-        #     mutation_rate=MUTATION_RATE
-        # )
-        breeding_way = CoupleBreeding(
-            strategy,
-            genes_with_scores=pre_genes_with_scores,
-            mutation_rate=MUTATION_RATE
-        )
+        breeding_way.bind_genes_with_scores(pre_genes_with_scores)
         for _ in range(COLLECTOR_NUM):
             collector = Collector(strategy, breeding_way=breeding_way)
             cur_collectors.append(collector)
@@ -71,17 +62,37 @@ def generation_work(generation, pre_genes_with_scores: list):
 
     # 本代清理
     best_score = max(scores_with_genes)[0]
-    print(f'generation #{generation}\'s best score: {best_score}')
+    print(f'generation #{generation + 1}\'s best score: {best_score}')
 
     return scores_with_genes, best_score
 
 
 if __name__ == '__main__':
+    cmd = 'python ./run.py [breeding way: 1-single breeding; 2-couple breeding]'
+
+    if len(sys.argv) != 2:
+        print(f'Usage: {cmd}')
+        exit(1)
+
     strategy = Strategy()
     squares = []
 
     for i in range(SQUARE_NUM):
         squares.append(Square(SQUARE_WIDTH, SQUARE_HEIGHT))
+
+    breeding_way = None
+    algorithm_name = ''
+
+    if sys.argv[1] == '1':
+        breeding_way = SingleBreeding(strategy, mutation_rate=MUTATION_RATE)
+        algorithm_name = 'Single Breeding'
+    elif sys.argv[1] == '2':
+        breeding_way = CoupleBreeding(strategy, mutation_rate=MUTATION_RATE)
+        algorithm_name = 'Couple Breeding'
+
+    if breeding_way is None:
+        print(f'Usage: {cmd}')
+        exit(1)
 
     best_scores = []
     pre_genes_with_scores = []
@@ -89,7 +100,7 @@ if __name__ == '__main__':
     # 更新换代
     for g in range(GENERATION_NUM):
         pre_genes_with_scores, best_score = generation_work(
-            g, pre_genes_with_scores)
+            g, pre_genes_with_scores, breeding_way)
         best_scores.append(best_score)
 
     # 画进化分数图
@@ -100,7 +111,7 @@ if __name__ == '__main__':
         x.append(key + 1)
         y.append(value)
 
-    plt.title('GA Algorithm Demo: Garbage Collector\'s Evolution)')
+    plt.title(f'GA({algorithm_name}) Demo: Garbage Collector\'s Evolution')
     plt.xlabel('generations')
     plt.ylabel('scores')
     plt.plot(x, y, label='evolutionary score curve')
