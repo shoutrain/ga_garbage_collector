@@ -47,7 +47,7 @@ python ./run.py [required - mutation rate: 0 < mutation_rate < 1] [required - br
 python3 ./run.py 0.01 2 12
 ```
 
-最后说下，建议在强一点的机器上跑，这样会节省您的时间。
+这里得说下，建议你在强一点的机器上跑，这样会节省你的时间；另外，这是个有趣的小项目，只有master分支。
 
 ## 实验记录
 
