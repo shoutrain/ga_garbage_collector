@@ -12,7 +12,6 @@ SQUARE_NUM = 100  # 不同的环境数量
 COLLECTOR_NUM = 100  # 收机器人个数
 ACTION_STEP_NUM = 200  # 收机器人一次行动步数
 GENERATION_NUM = 1000  # 遗传代数
-MUTATION_RATE = 0.01  # 变异率
 
 
 def collector_work(collector: Collector, squares: list, scores_with_genes: list):
@@ -69,12 +68,13 @@ def generation_work(processor_num, generation, pre_genes_with_scores: list, bree
 
 
 if __name__ == '__main__':
-    parameter_1_msg = '[required - breeding way: 1-single breeding; 2-couple breeding]'
-    parameter_2_msg = '[optional - processor number, default: 8]'
-    cmd = f'python ./run.py {parameter_1_msg} {parameter_2_msg}'
+    parameter_1_msg = '[required - mutation rate: 0 < mutation_rate < 1]'
+    parameter_2_msg = '[required - breeding way: 1-single breeding; 2-couple breeding]'
+    parameter_3_msg = '[optional - processor number, default: 8]'
+    cmd = f'python ./run.py {parameter_1_msg} {parameter_2_msg} {parameter_3_msg}'
     cmd_length = len(sys.argv)
 
-    if cmd_length != 2 and cmd_length != 3:
+    if cmd_length != 3 and cmd_length != 4:
         print(f'Usage: {cmd}')
         exit(1)
 
@@ -84,24 +84,37 @@ if __name__ == '__main__':
     for i in range(SQUARE_NUM):
         squares.append(Square(SQUARE_WIDTH, SQUARE_HEIGHT))
 
+    # 变异率的参数获取和检查
+    mutation_rate = float(sys.argv[1])
+
+    if mutation_rate <= 0 or mutation_rate >= 1:
+        print(f'Usage: {cmd}')
+        exit(1)
+
+    # 繁殖方式的参数获取和检查
     breeding_way = None
     algorithm_name = ''
 
-    if sys.argv[1] == '1':
-        breeding_way = SingleBreeding(strategy, mutation_rate=MUTATION_RATE)
+    if sys.argv[2] == '1':
+        breeding_way = SingleBreeding(strategy, mutation_rate=mutation_rate)
         algorithm_name = 'Single Breeding'
-    elif sys.argv[1] == '2':
-        breeding_way = CoupleBreeding(strategy, mutation_rate=MUTATION_RATE)
+    elif sys.argv[2] == '2':
+        breeding_way = CoupleBreeding(strategy, mutation_rate=mutation_rate)
         algorithm_name = 'Couple Breeding'
 
     if breeding_way is None:
         print(f'Usage: {cmd}')
         exit(1)
 
+    # 进程的参数获取和检查
     processor_num = DEFAULT_PROCESSOR_NUM
 
-    if cmd_length == 3:
-        processor_num = int(sys.argv[2])
+    if cmd_length == 4:
+        processor_num = int(sys.argv[3])
+
+    if processor_num <= 0:
+        print(f'Usage: {cmd}')
+        exit(1)
 
     best_scores = []
     pre_genes_with_scores = []
@@ -124,7 +137,8 @@ if __name__ == '__main__':
         x.append(key + 1)
         y.append(value)
 
-    plt.title(f'GA({algorithm_name}) Demo: Garbage Collector\'s Evolution')
+    title = f'GA({algorithm_name}) Demo(Mutation Rate:{mutation_rate}, Processor Num:{processor_num})'
+    plt.title(title)
     plt.xlabel('generations')
     plt.ylabel('scores')
     plt.plot(x, y, label='evolutionary score curve')
